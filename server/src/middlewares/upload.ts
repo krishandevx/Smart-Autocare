@@ -7,6 +7,11 @@ import { ApiError } from '../utils/ApiError';
 export const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
+interface UploadedFile {
+  filename: string;
+  originalname: string;
+}
+
 const ALLOWED = new Set([
   'image/jpeg',
   'image/png',
@@ -37,11 +42,11 @@ export const upload = multer({
 });
 
 export function filesToUrls(req: Request, key = 'files'): string[] {
-  const files = (req.files as Express.Multer.File[]) || [];
+  const files = (req.files as UploadedFile[]) || [];
   return files.map((f) => `/uploads/${f.filename}`);
 }
 
 export function fileToUrl(req: Request, key = 'file'): string {
-  const file = (req.file as Express.Multer.File) || (req as any)[key];
+  const file = (req.file as UploadedFile) || (req as any)[key];
   return file ? `/uploads/${file.filename}` : '';
 }
