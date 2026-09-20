@@ -1,4 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -31,8 +33,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (_req, res) => res.json({ success: true, message: 'Smart AutoCare API', docs: '/api/health' }));
 app.use('/api', apiLimiter, apiRoutes);
+
+const clientDist = path.join(__dirname, '../../client/dist');
+if (env.NODE_ENV === 'production' && fs.existsSync(path.join(clientDist, 'index.html'))) {
+  app.use(express.static(clientDist));
+  app.get(/^\/(?!api|uploads).*/, (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+  console.log(`[server] serving client static from ${clientDist}`);
+} else {
+  app.get('/', (_req, res) => res.json({ success: true, message: 'Smart AutoCare API', docs: '/api/health' }));
+}
 
 app.use(notFoundHandler);
 app.use(errorHandler as (err: any, req: Request, res: Response, next: NextFunction) => void);

@@ -212,11 +212,24 @@ For production:
 
 1. Set a strong `JWT_SECRET`, your real `MONGO_URI`, `CLIENT_URL`, `SERVER_URL`, `COOKIE_SECURE=true`, and the `ADMIN_*` bootstrap vars in `server/.env`.
 2. `npm run build`.
-3. Serve the **API** (`npm start`, or `node server/dist/index.js`) and the **frontend** (`client/dist`) on your infrastructure. The server does not serve the static client — host it with nginx/Caddy or a static/edge host (Netlify, Cloudflare Pages, Vercel, S3+CDN, etc.).
+3. Serve the **API** (`npm start`, or `node server/dist/index.js`) and the **frontend** (`client/dist`) on your infrastructure. The server **does** serve the built client in production when `client/dist` exists — you can host everything on a single Node process (as the Render blueprint does), or split the API and the static files across hosts.
 4. Point the client's requests at the API. In development Vite proxies `/api` → `http://localhost:5001`; in production make sure both apps share the domain (API under `/api` on the same origin) or configure CORS properly — the whitelist lives in `server/src/app.ts` and the cookie is scoped to the API origin.
 5. Socket.IO must be routable (e.g. nginx `proxy_set_header Upgrade` / `Connection` for the API websocket endpoint).
 
 Environment-specific defaults are in `server/src/config/env.ts` and `client/vite.config.ts` (proxy settings).
+
+### Deploying on Render (single service)
+
+A `render.yaml` blueprint is included, so the easiest path is:
+
+1. Click **New + → Blueprint** in the Render dashboard and pick this repo (after pushing it to GitHub).
+2. Set the sync'd env vars in the "Environment" tab of the created service:
+   - `MONGO_URI` — your database connection string (Render's managed MongoDB via **New + → MongoDB**, or MongoDB Atlas). The free tier has no persistent disk, so uploads under `server/uploads` are ephemeral.
+   - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` — created/reset on first boot (unset = no admin).
+3. `JWT_SECRET` is auto-generated; `NODE_ENV=production` and `COOKIE_SECURE=true` are set for you; `CLIENT_URL` / `SERVER_URL` fall back to Render's `RENDER_EXTERNAL_URL` automatically.
+4. Deploy. The service listens on `$PORT`, serves the built SPA from `client/dist`, and the API under `/api` — same origin, so cookies and Socket.IO need no extra config.
+
+In the dashboard you can also deploy manually: **New + → Web Service**, repo, build `npm ci && npm run build`, start `npm start`, health check `/api/health`, same env vars. In production the server serves the client it built, so no separate static host or nginx is needed.
 
 ---
 
