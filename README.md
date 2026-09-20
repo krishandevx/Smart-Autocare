@@ -229,7 +229,9 @@ A `render.yaml` blueprint is included, so the easiest path is:
 3. `JWT_SECRET` is auto-generated; `NODE_ENV=production` and `COOKIE_SECURE=true` are set for you; `CLIENT_URL` / `SERVER_URL` fall back to Render's `RENDER_EXTERNAL_URL` automatically.
 4. Deploy. The service listens on `$PORT`, serves the built SPA from `client/dist`, and the API under `/api` — same origin, so cookies and Socket.IO need no extra config.
 
-In the dashboard you can also deploy manually: **New + → Web Service**, repo, build `npm ci && npm run build`, start `npm start`, health check `/api/health`, same env vars. In production the server serves the client it built, so no separate static host or nginx is needed.
+In the dashboard you can also deploy manually: **New + → Web Service**, repo, build `npm install && npm run build`, start `npm start`, health check `/api/health`, same env vars. In production the server serves the client it built, so no separate static host or nginx is needed.
+
+> The build uses `npm install`, not `npm ci`. Rollup/Vite's platform-specific binary is a Linux-only optional dependency; the lockfile here is generated on macOS (see [npm/cli#4828](https://github.com/npm/cli/issues/4828)), so a strict `npm ci` on a fresh Linux host can fail with `Cannot find module @rollup/rollup-linux-x64-gnu`. `npm install` still installs the exact versions in the lockfile but resolves that one optional platform package on the target machine.
 
 ---
 
