@@ -231,7 +231,19 @@ Environment-specific defaults are in `server/src/config/env.ts` and `client/vite
 | `npm run seed:samples` | Add realistic (fictional) sample data, opt-in     |
 | `npm run typecheck`  | Typecheck server + client                           |
 | `npm run build`      | Typecheck, then compile server + client             |
+| `npm test`           | Run the server API smoke tests (needs a local MongoDB) |
 | `npm start`          | Run compiled server                                 |
+
+## Tests
+
+`npm test` boots the real Express app on a random port and runs an end-to-end smoke suite (`server/src/__tests__/api.test.ts`) using Node's built-in test runner: health check, admin login, sign-up (role elevation blocked), `/me`, RBAC guards, service/vehicle/booking creation, and 401 on unauthenticated access.
+
+- Uses a scratch database — `TEST_MONGO_URI` or defaults to `mongodb://127.0.0.1:27017/sac_api_test` (dropped after the run).
+- Requires a local MongoDB instance and `.env` with `ADMIN_EMAIL` / `ADMIN_PASSWORD` (used to bootstrap the admin under test).
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push/PR to `main`: `npm ci`, typecheck, build, then the test suite against a MongoDB service container. Env vars such as `ADMIN_EMAIL`, `JWT_SECRET`, and `TEST_MONGO_URI` are injected there, so a gitignored `server/.env` is never needed in CI.
 
 ---
 
@@ -242,3 +254,4 @@ Environment-specific defaults are in `server/src/config/env.ts` and `client/vite
 - There are no demo accounts or default passwords in the codebase — the initial admin comes only from `ADMIN_*` environment variables.
 - Rate limits are applied to the API and to auth endpoints (tunable via `RATE_LIMIT_API` / `RATE_LIMIT_AUTH`).
 - Do not commit `server/.env` or any real secrets. `.env.example` contains placeholders only.
+- `npm audit` is clean except for the **Vite dev server** used while developing the client (moderate/high, local-only: dev-server path traversal and Windows-only issues). It is never present in the production bundle or the served API; a fix would require a breaking Vite 8 upgrade (and its plugin chain), so it is consciously deferred. `esbuild` and all server dependencies audit clean.

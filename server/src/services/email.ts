@@ -1,9 +1,10 @@
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import { env } from '../config/env';
 
-let transporter: nodemailer.Transporter | null = null;
+let transporter: Transporter | null = null;
 
-function getTransporter(): nodemailer.Transporter | null {
+function getTransporter(): Transporter | null {
   if (!env.SMTP_HOST) return null;
   if (!transporter) {
     transporter = nodemailer.createTransport({

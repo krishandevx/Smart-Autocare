@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "seed": "tsx src/seed/run.ts",
     "seed:samples": "tsx src/seed/runSamples.ts",
+    "test": "node --import tsx --test \"src/__tests__/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -21,7 +22,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.7.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.15",
+    "nodemailer": "^10.0.10",
     "socket.io": "^4.8.0",
     "zod": "^3.23.8"
   },

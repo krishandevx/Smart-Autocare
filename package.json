@@ -15,11 +15,15 @@
     "build:server": "npm --prefix server run build",
     "build:client": "npm --prefix client run build",
     "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server run test",
     "typecheck": "npm --prefix server run typecheck && npm --prefix client run typecheck",
     "start": "npm --prefix server run start"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
+  },
+  "overrides": {
+    "esbuild": "^0.25.1"
   },
   "allowScripts": {
     "esbuild@0.28.2": true,

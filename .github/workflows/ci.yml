@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    env:
+      ADMIN_EMAIL: ci-admin@test.local
+      ADMIN_PASSWORD: CiTest@123
+      ADMIN_NAME: CI Admin
+      JWT_SECRET: ci-jwt-secret-for-tests-only
+      JWT_EXPIRES_IN: 7d
+      TEST_MONGO_URI: mongodb://localhost:27017/sac_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
