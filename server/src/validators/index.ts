@@ -12,9 +12,9 @@ export const registerSchema = z.object({
   email: emailSchema,
   phone: phoneSchema,
   password: passwordSchema,
-  confirmPassword: z.string(),
+  confirmPassword: z.string().optional(),
   address: z.string().optional().default(''),
-}).refine((d) => d.password === d.confirmPassword, { message: 'Passwords do not match', path: ['confirmPassword'] });
+}).refine((d) => !d.confirmPassword || d.password === d.confirmPassword, { message: 'Passwords do not match', path: ['confirmPassword'] });
 
 export const loginSchema = z.object({
   email: emailSchema,

@@ -13,10 +13,22 @@ import { unvehicle } from '../admin/shared';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
-  const { data, isLoading } = useCustomerDashboard();
+  const { data, isLoading, isError } = useCustomerDashboard();
 
   if (isLoading) return <PageLoader />;
-  if (!data) return null;
+  if (isError || !data) {
+    return (
+      <EmptyState
+        title="Couldn't load your dashboard"
+        description="We couldn't reach the server. Check your connection and try again."
+        action={
+          <button className="btn-primary" onClick={() => window.location.reload()}>
+            Retry
+          </button>
+        }
+      />
+    );
+  }
 
   const day = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening';
   const dueReminders = data.reminders.filter((r) => ['Due Soon', 'Overdue'].includes(r.status)).length;
@@ -64,6 +76,29 @@ export default function CustomerDashboard() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <Card>
+          <CardTitle>Active service</CardTitle>
+          <CardDescription>Work currently in progress</CardDescription>
+          <div className="mt-4">
+            {data.active ? (
+              <div className="flex items-center gap-4 rounded-xl border border-slate-100 p-4 dark:border-slate-800">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                  <Wrench className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-800 dark:text-slate-100">
+                    {data.active.bookingId} · {unvehicle(data.active.vehicle)?.brand} {unvehicle(data.active.vehicle)?.model}
+                  </p>
+                  <p className="text-xs text-slate-400">Estimate and inspection updates will appear here.</p>
+                </div>
+                <StatusBadge status={data.active.status} />
+              </div>
+            ) : (
+              <EmptyState title="No active service" description="Nothing is being serviced right now." />
+            )}
+          </div>
+        </Card>
+
+        <Card>
           <CardTitle>Upcoming appointment</CardTitle>
           <CardDescription>Your next scheduled service visit</CardDescription>
           <div className="mt-4">
@@ -84,29 +119,6 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <EmptyState title="No upcoming appointment" description="Book a service to see it here." />
-            )}
-          </div>
-        </Card>
-
-        <Card>
-          <CardTitle>Active service</CardTitle>
-          <CardDescription>Work currently in progress</CardDescription>
-          <div className="mt-4">
-            {data.active ? (
-              <div className="flex items-center gap-4 rounded-xl border border-slate-100 p-4 dark:border-slate-800">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <Wrench className="h-5 w-5" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-800 dark:text-slate-100">
-                    {data.active.bookingId} · {unvehicle(data.active.vehicle)?.brand} {unvehicle(data.active.vehicle)?.model}
-                  </p>
-                  <p className="text-xs text-slate-400">Estimate and inspection updates will appear here.</p>
-                </div>
-                <StatusBadge status={data.active.status} />
-              </div>
-            ) : (
-              <EmptyState title="No active service" description="Nothing is being serviced right now." />
             )}
           </div>
         </Card>

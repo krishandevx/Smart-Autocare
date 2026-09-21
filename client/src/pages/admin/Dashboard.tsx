@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useAdminDashboard, useAppointments, useParts, useCustomers } from '../../api/hooks';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/ui/StatCard';
-import { PageLoader } from '../../components/ui/Feedback';
+import { PageLoader, EmptyState } from '../../components/ui/Feedback';
 import { Card, CardTitle, CardDescription } from '../../components/ui/Card';
 import { StatusBadge } from '../../components/ui/Badge';
 import { formatCurrency, formatDate } from '../../lib/utils';
@@ -12,13 +12,25 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { unuser, unvehicle } from './shared';
 
 export default function AdminDashboard() {
-  const { data, isLoading } = useAdminDashboard();
+  const { data, isLoading, isError } = useAdminDashboard();
   const { data: apptsData } = useAppointments({ limit: 6, date: new Date().toISOString().slice(0, 10) });
   const { data: partsData } = useParts({ lowStock: true, limit: 6 });
   const { data: customersData } = useCustomers({ limit: 5 });
 
   if (isLoading) return <PageLoader />;
-  if (!data) return null;
+  if (isError || !data) {
+    return (
+      <EmptyState
+        title="Couldn't load the dashboard"
+        description="We couldn't reach the server. Check your connection and try again."
+        action={
+          <button className="btn-primary" onClick={() => window.location.reload()}>
+            Retry
+          </button>
+        }
+      />
+    );
+  }
 
   const chartData = data.revenueSeries?.map((s) => ({ label: s.label, Revenue: s.revenue, Services: s.services })) ?? [];
 
@@ -33,19 +45,38 @@ export default function AdminDashboard() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Today's appointments" value={data.todayAppointments} icon={CalendarCheck} tone="sky" href="/admin/appointments" />
         <StatCard label="Open job cards" value={data.activeJobs} icon={Wrench} tone="brand" href="/admin/job-cards" />
         <StatCard label="Awaiting approval" value={data.pendingApprovals} icon={Hourglass} tone="amber" href="/admin/estimates" />
         <StatCard label="Vehicles in shop" value={data.inShopVehicles} icon={Car} tone="sky" href="/admin/bookings" />
-        <StatCard label="This month revenue" value={formatCurrency(data.thisMonthRevenue, true)} icon={TrendingUp} tone="green" href="/admin/reports" />
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Today's appointments" value={data.todayAppointments} icon={CalendarCheck} tone="sky" href="/admin/appointments" />
+        <StatCard label="This month revenue" value={formatCurrency(data.thisMonthRevenue, true)} icon={TrendingUp} tone="green" href="/admin/reports" />
         <StatCard label="Pending payments" value={formatCurrency(data.pendingPaymentTotal, true)} icon={Wallet} tone="red" href="/admin/invoices" />
         <StatCard label="Low stock parts" value={data.lowStockCount} icon={Package} tone="amber" href="/admin/inventory" />
         <StatCard label="New customers" value={data.newCustomersThisMonth} icon={Users} tone="violet" href="/admin/customers" />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <Card>
+          <CardTitle>Today's appointments</CardTitle>
+          <CardDescription>Who's coming in today</CardDescription>
+          <div className="mt-4 space-y-3">
+            {(apptsData?.data ?? []).length === 0 && <p className="text-sm text-slate-400">No appointments today.</p>}
+            {(apptsData?.data ?? []).slice(0, 5).map((a) => (
+              <Link key={a._id} to="/admin/appointments" className="flex items-center justify-between gap-2 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{unuser(a.customer)?.name}</p>
+                  <p className="truncate text-xs text-slate-400">
+                    {unvehicle(a.vehicle)?.brand} {unvehicle(a.vehicle)?.model} · {a.timeSlot}
+                  </p>
+                </div>
+                <StatusBadge status={a.status} />
+              </Link>
+            ))}
+          </div>
+        </Card>
+
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between">
             <div>
@@ -71,25 +102,6 @@ export default function AdminDashboard() {
                 <Area type="monotone" dataKey="Revenue" stroke="#1b66f5" strokeWidth={2} fill="url(#rev)" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card>
-          <CardTitle>Today's appointments</CardTitle>
-          <CardDescription>Next pending slots</CardDescription>
-          <div className="mt-4 space-y-3">
-            {(apptsData?.data ?? []).length === 0 && <p className="text-sm text-slate-400">No appointments today.</p>}
-            {(apptsData?.data ?? []).slice(0, 5).map((a) => (
-              <Link key={a._id} to="/admin/appointments" className="flex items-center justify-between gap-2 text-sm">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-slate-800 dark:text-slate-100">{unuser(a.customer)?.name}</p>
-                  <p className="truncate text-xs text-slate-400">
-                    {unvehicle(a.vehicle)?.brand} {unvehicle(a.vehicle)?.model} · {a.timeSlot}
-                  </p>
-                </div>
-                <StatusBadge status={a.status} />
-              </Link>
-            ))}
           </div>
         </Card>
       </div>

@@ -64,13 +64,6 @@ function AuthRedirect() {
   return <Login />;
 }
 
-function RootRedirect() {
-  const { user, ready } = useAuth();
-  if (!ready) return null;
-  if (!user) return <Navigate to="/" replace />;
-  return <Navigate to={user.role === 'customer' ? '/account' : '/admin'} replace />;
-}
-
 export default function App() {
   return (
     <>
@@ -101,7 +94,7 @@ export default function App() {
         </Route>
 
         <Route
-          path="/account"
+          path="/account/*"
           element={
             <ProtectedRoute roles={['customer']}>
               <AppShell
@@ -117,10 +110,9 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/account/*" element={<RootRedirect />} />
 
         <Route
-          path="/admin"
+          path="/admin/*"
           element={
             <StaffRoute>
               <AppShell config={{ name: 'Admin Panel', nav: adminNav, allowedRoles: ['admin', 'workshop_manager', 'service_advisor', 'mechanic', 'inventory_manager', 'accountant', 'super_admin'], base: '/admin' }}>
@@ -129,7 +121,6 @@ export default function App() {
             </StaffRoute>
           }
         />
-        <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </>
   );

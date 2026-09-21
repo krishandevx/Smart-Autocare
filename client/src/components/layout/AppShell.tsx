@@ -231,23 +231,31 @@ export const customerNav: NavItem[] = [
 ];
 
 export const adminNav: NavItem[] = [
+  // At a glance
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  // Today's work
   { to: '/admin/appointments', label: 'Appointments', icon: CalendarCheck },
   { to: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
   { to: '/admin/job-cards', label: 'Job Cards', icon: Wrench },
+  // During service
   { to: '/admin/inspections', label: 'Inspections', icon: ClipboardX },
   { to: '/admin/estimates', label: 'Estimates', icon: Percent },
+  // Billing
+  { to: '/admin/invoices', label: 'Invoices', icon: Receipt },
+  { to: '/admin/payments', label: 'Payments', icon: Wallet },
+  // Resources
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/vehicles', label: 'Vehicles', icon: Car },
   { to: '/admin/services', label: 'Services', icon: Wrench },
   { to: '/admin/employees', label: 'Employees', icon: Users },
+  // Stock
   { to: '/admin/inventory', label: 'Inventory', icon: Package },
   { to: '/admin/suppliers', label: 'Suppliers', icon: Truck },
   { to: '/admin/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart },
-  { to: '/admin/invoices', label: 'Invoices', icon: Receipt },
-  { to: '/admin/payments', label: 'Payments', icon: Wallet },
+  // Insights
   { to: '/admin/reports', label: 'Reports', icon: LineChart },
   { to: '/admin/reviews', label: 'Reviews', icon: Star },
+  // Admin
   { to: '/admin/notifications', label: 'Notifications', icon: Bell },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ];

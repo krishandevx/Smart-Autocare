@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateProfile = async (patch: Partial<User>) => {
-    const u = await put<User>('/auth/profile', patch);
+    const u = await put<User>('/auth/me', patch);
     setUser((prev) => (prev ? { ...prev, ...u } : u));
     return u;
   };
